@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "723117685673",
+    "project_id": "mob-academic",
+    "storage_bucket": "mob-academic.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:723117685673:android:ec76193bec6f99c6f4e2b8",
+        "android_client_info": {
+          "package_name": "com.kotlin.mobileacademic"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAdnflVvZQclxwT3xmmX0b_uY-Z6uESmWk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
