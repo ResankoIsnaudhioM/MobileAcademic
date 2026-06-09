@@ -81,6 +81,10 @@ fun DashboardScreen(
         mutableStateOf(listOf<Schedule>())
     }
 
+    var showTodayOnly by remember {
+        mutableStateOf(true)
+    }
+
     LaunchedEffect(Unit) {
 
         val uid = auth.currentUser?.uid
@@ -129,6 +133,30 @@ fun DashboardScreen(
                     println("GAGAL AMBIL JADWAL: ${it.message}")
                 }
             }
+        }
+
+    val todayName = when (
+        java.text.SimpleDateFormat(
+            "EEEE",
+            java.util.Locale.ENGLISH
+        ).format(java.util.Date())
+    ) {
+        "Monday" -> "Senin"
+        "Tuesday" -> "Selasa"
+        "Wednesday" -> "Rabu"
+        "Thursday" -> "Kamis"
+        "Friday" -> "Jumat"
+        "Saturday" -> "Sabtu"
+        else -> "Minggu"
+    }
+
+    val displayedSchedules =
+        if (showTodayOnly) {
+            schedules.filter {
+                it.hari == todayName
+            }
+        } else {
+            schedules
         }
 
     Scaffold(
@@ -198,15 +226,59 @@ fun DashboardScreen(
                 }
             }
 
+            if (displayedSchedules.isEmpty()) {
+
+                item {
+
+                    Card(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+
+                        Text(
+                            text = "Tidak ada jadwal kuliah hari ini 🎉",
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
+                }
+            }
+
             item {
 
                 Text(
-                    text = "Jadwal Kuliah",
+                    text =
+                        if (showTodayOnly)
+                            "Jadwal Hari Ini"
+                        else
+                            "Semua Jadwal",
                     style = MaterialTheme.typography.headlineSmall
                 )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Row(
+                    horizontalArrangement =
+                        Arrangement.spacedBy(8.dp)
+                ) {
+
+                    Button(
+                        onClick = {
+                            showTodayOnly = true
+                        }
+                    ) {
+                        Text("Hari Ini")
+                    }
+
+                    OutlinedButton(
+                        onClick = {
+                            showTodayOnly = false
+                        }
+                    ) {
+                        Text("Semua")
+                    }
+                }
             }
 
-            items(schedules) { schedule ->
+            items(displayedSchedules) { schedule ->
 
                 ElevatedCard(
                     modifier = Modifier.fillMaxWidth()
