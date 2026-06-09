@@ -72,8 +72,7 @@ fun DashboardScreen(
     auth: FirebaseAuth,
     firestore: FirebaseFirestore,
     onLogout: () -> Unit
-) {
-
+)   {
     var student by remember {
         mutableStateOf(Student())
     }
@@ -82,25 +81,54 @@ fun DashboardScreen(
         mutableStateOf(listOf<Schedule>())
     }
 
-    firestore.collection("schedule")
-        .get()
-        .addOnSuccessListener { result ->
+    LaunchedEffect(Unit) {
 
-            val list = mutableListOf<Schedule>()
+        val uid = auth.currentUser?.uid
 
-            for (doc in result) {
+        if (uid != null) {
 
-                list.add(
-                    Schedule(
-                        hari = doc.getString("hari") ?: "",
-                        mataKuliah = doc.getString("mataKuliah") ?: "",
-                        jam = doc.getString("jam") ?: "",
-                        ruang = doc.getString("ruang") ?: ""
-                    )
-                )
+            firestore.collection("users")
+                .document(uid)
+                .get()
+                .addOnSuccessListener { document ->
+
+                    if (document.exists()) {
+
+                        student = Student(
+                            nama = document.getString("nama") ?: "",
+                            nim = document.getString("nim") ?: "",
+                            prodi = document.getString("prodi") ?: "",
+                            email = document.getString("email") ?: ""
+                        )
+                    }
+                }
+
+            firestore.collection("schedules")
+                .get()
+                .addOnSuccessListener { result ->
+
+                    println("JUMLAH JADWAL = ${result.size()}")
+
+                    val list = mutableListOf<Schedule>()
+
+                    for (doc in result) {
+
+                        list.add(
+                            Schedule(
+                                hari = doc.getString("hari") ?: "",
+                                mataKuliah = doc.getString("mataKuliah") ?: "",
+                                jam = doc.getString("jam") ?: "",
+                                ruang = doc.getString("ruang") ?: ""
+                            )
+                        )
+                    }
+
+                    schedules = list
+                }
+                .addOnFailureListener {
+                    println("GAGAL AMBIL JADWAL: ${it.message}")
+                }
             }
-
-            schedules = list
         }
 
     Scaffold(
@@ -143,9 +171,7 @@ fun DashboardScreen(
                             style = MaterialTheme.typography.headlineSmall
                         )
 
-                        Text(
-                            text = "NIM: ${student.nim}"
-                        )
+                        Text("NIM: ${student.nim}")
                     }
                 }
             }
@@ -167,10 +193,7 @@ fun DashboardScreen(
 
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        Text(
-                            text = student.prodi,
-                            style = MaterialTheme.typography.bodyLarge
-                        )
+                        Text(student.prodi)
                     }
                 }
             }
@@ -198,18 +221,14 @@ fun DashboardScreen(
                             style = MaterialTheme.typography.titleLarge
                         )
 
-                        Spacer(modifier = Modifier.height(6.dp))
-
-                        Text(" ${schedule.hari}")
-                        Text(" ${schedule.jam}")
-                        Text(" ${schedule.ruang}")
+                        Text("Hari : ${schedule.hari}")
+                        Text("Jam : ${schedule.jam}")
+                        Text("Ruang : ${schedule.ruang}")
                     }
                 }
             }
 
             item {
-
-                Spacer(modifier = Modifier.height(12.dp))
 
                 Button(
                     onClick = onLogout,

@@ -37,77 +37,54 @@ class RegisterActivity : ComponentActivity() {
             val email = etEmail.text.toString().trim()
             val password = etPassword.text.toString().trim()
 
-            if (nama.isEmpty()) {
-                etNama.error = "Nama wajib diisi"
-                return@setOnClickListener
-            }
-
-            if (nim.isEmpty()) {
-                etNim.error = "NIM wajib diisi"
-                return@setOnClickListener
-            }
-
-            if (prodi.isEmpty()) {
-                etProdi.error = "Prodi wajib diisi"
-                return@setOnClickListener
-            }
-
-            if (email.isEmpty()) {
-                etEmail.error = "Email wajib diisi"
-                return@setOnClickListener
-            }
-
-            if (password.length < 6) {
-                etPassword.error = "Password minimal 6 karakter"
-                return@setOnClickListener
-            }
-
             auth.createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this) { task ->
+                .addOnSuccessListener {
 
-                    if (task.isSuccessful) {
+                    val uid = auth.currentUser!!.uid
 
-                        val uid = auth.currentUser?.uid ?: ""
+                    val userData = hashMapOf(
+                        "nama" to nama,
+                        "nim" to nim,
+                        "prodi" to prodi,
+                        "email" to email
+                    )
 
-                        val userData = hashMapOf(
-                            "nama" to nama,
-                            "nim" to nim,
-                            "prodi" to prodi,
-                            "email" to email
-                        )
+                    firestore.collection("users")
+                        .document(uid)
+                        .set(userData)
+                        .addOnSuccessListener {
 
-                        firestore.collection("users")
-                            .document(uid)
-                            .set(userData)
-                            .addOnSuccessListener {
+                            Toast.makeText(
+                                this,
+                                "Registrasi Berhasil",
+                                Toast.LENGTH_SHORT
+                            ).show()
 
-                                Toast.makeText(
+                            startActivity(
+                                Intent(
                                     this,
-                                    "Registrasi Berhasil",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-
-                                startActivity(
-                                    Intent(
-                                        this,
-                                        LoginActivity::class.java
-                                    )
+                                    LoginActivity::class.java
                                 )
+                            )
 
-                                finish()
-                            }
-                    } else {
+                            finish()
+                        }
+                        .addOnFailureListener {
 
-                        val errorMessage = task.exception?.message
+                            Toast.makeText(
+                                this,
+                                "Gagal Simpan Data Firestore",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                }
+                .addOnFailureListener {
 
-                        Toast.makeText(
-                            this,
-                            "Registrasi Gagal: $errorMessage",
-                            Toast.LENGTH_LONG
-                        ).show()
-
-                        println("REGISTER ERROR = $errorMessage")
-                    }
+                    Toast.makeText(
+                        this,
+                        it.message,
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
         }
     }
